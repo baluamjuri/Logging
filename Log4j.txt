@@ -1,0 +1,138 @@
+Log4J : Apache - Open Source
+
+Sysout drawbacks:
+-----------------
+Generally SOP statements are printed on console, so there are temporary messages and when ever the console is closed then automatically the messages are removed from the console.
+SOP messages are single threaded model, means these will prints only one by one message on the console screen
+
+Log4J Advantages:
+-----------------
+Allows to write log msgs to diff destinations like files, database, MailServer(requires mail.jar) etc.
+Multithreaded
+
+
+We can categorize log msgs with priority levels debug<info<warn<error<fatal
+Allows to display msgs in diff formats and layouts 
+Enables of logging on particular class or pkg or app
+
+log4j has three main components:
+---------------------------------
+loggers: Responsible for capturing logging information.
+appenders: Responsible for publishing logging information to various preferred destinations.(ConsoleAppender, FileAppender, JDBCAppender etc..)
+layouts: Responsible for formatting logging information in different styles. (DateLayout, HTMLLayout, PatternLayout, SimpleLayout, XMLLayout)
+
+=============================================================================================================================================
+
+Log4j will automatically load the configuration if it is stored in a file called "log4j.properties" and is present on the classpath under "" (e.g. WEB-INF/classes/log4j.properties).
+
+Log4J supports both xml and properties file
+We can overwrite the configurations of xml or properties file with programmatic approach like:
+logger.setLevel(Level.DEBUG)
+logger.info("---");
+
+Log4J.properties file:
+----------------------
+#Below is for lateral use
+log = /usr/home/log4j
+
+# Define the root logger with appender file
+log4j.rootLogger = FILE, stdout
+
+# Define the file appender
+log4j.appender.FILE=org.apache.log4j.FileAppender
+log4j.appender.FILE.File=${log}/log.out
+
+# Define the layout for file appender
+log4j.appender.FILE.layout=org.apache.log4j.PatternLayout
+log4j.appender.FILE.layout.conversionPattern=%m%n
+log4j.appender.file.MaxFileSize=10MB
+log4j.appender.file.MaxBackupIndex=10
+
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+============================================================================================
+
+#If you want to set the log level 
+log4j.rootLogger=INFO, FILE, stdout
+#But here INFO is log level for both FILE and stdout
+
+
+#If you want to set diff log level for different loggers
+log4j.rootLogger=DEBUG, FILE, stdout
+###INFO log level for stdout, and aDEBUG log level for FILE
+log4j.appender.stdout.threshold=INFO
+
+=============================================================================================
+#Put Different logging for a class pkg
+
+# Root logger option
+log4j.rootLogger=INFO, file, stdout
+	
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+.........
+
+# Direct log messages to a log file
+log4j.appender.file=org.apache.log4j.RollingFileAppender 
+log4j.appender.file.File=F:\\App\\fileone.log
+.........
+
+# Direct log messages for utils pkg to a log file
+log4j.logger.org.balu.utils=DEBUG, service
+
+log4j.appender.service=org.apache.log4j.RollingFileAppender 
+log4j.appender.service.File=F:\\App\\filetwo.log
+log4j.appender.service.MaxFileSize=10000KB
+log4j.appender.service.MaxBackupIndex=10
+log4j.appender.service.layout=org.apache.log4j.PatternLayout
+log4j.appender.service.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p:: %m%n
+==============================================================================================
+
+#In the above logs of org.balu.utils will be logged in both fileone and filetwo log files.
+#Other pkgs will only logged in filetwo
+
+#If you want the log messages of org.balu.utils should log in filetwo only then you have two add one line
+#log4j.additivity.org.balu.utils=false -- By default this value is true
+
+...........
+log4j.logger.org.balu.utils=DEBUG, service
+log4j.additivity.org.balu.utils=false
+log4j.appender.service=org.apache.log4j.RollingFileAppender 
+log4j.appender.service.File=F:\\App\\filetwo.log
+log4j.appender.service.MaxFileSize=10000KB
+log4j.appender.service.MaxBackupIndex=10
+log4j.appender.service.layout=org.apache.log4j.PatternLayout
+log4j.appender.service.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p:: %m%n
+=============================================================================================
+log4j - Architecture
+
+Log4j API has been designed in layered where each layer provides different object which performs different tasks
+There are two type of objects available with Log4j framework.
+Core Objects: These are mandatory objects of the framework and required to use the framework.
+Support Objects: These are optional objects of the framework and support core objects to perform addition but important tasks.
+Core Objects:
+	A.Logger object [Capture log info]:- 
+		a.The top level layer is Logger which provides Logger object.
+		b.Responsible for capturing logging information and they are stored in a namespace hierarchy
+	B.Layout object [Formatting log content] :-
+		a.Used to format logging information in different styles
+	C.Appender object [Publishing log info]
+		a.This is lower level layer which provides Appender object
+		b.Responsible for publishing logging information to various preferred destinations such as a database, file, console, UNIX Syslog etc.
+Support Objects:
+	A.Level object :-
+		a.The Level object defines the granularity and priority of any logging information
+		b.There are seven levels of logging defined within the API: OFF, DEBUG, INFO, ERROR, WARN, FATAL, and ALL.
+	B.Filter object :-
+		a.used to analyze logging information and make further decisions on whether that information should be logged or not.
+	C.Object Rendered :-
+		a.The ObjectRenderer object is specialized in providing a String representation of different objects passed to the logging framework.
+		b.This object is used by Layout objects to prepare the final logging information.
+	D.Log Manager :-
+		a.The LogManager object manages the logging framework.
+		b.It is responsible for reading the initial configuration parameters from a system-wide configuration file or a configuration class.
+		
+	source:	http://sajadhaja.blogspot.in/2013/03/log4j.html
